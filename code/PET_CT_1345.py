@@ -29,7 +29,7 @@ ct_shape = ct_image.shape
 
 ct_pixel_size = 1.06  
 pet_pixel_size = 4.24 
-scale_factor = pet_pixel_size / ct_pixel_size  
+scale_factor =  ct_pixel_size / pet_pixel_size
 
 
 target_size = int(ct_shape[0] * scale_factor) 
