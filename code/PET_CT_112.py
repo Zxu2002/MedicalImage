@@ -101,6 +101,23 @@ angles = np.linspace(0, 180, 180,endpoint=False)
 ct_ossart = os_sart(ct_corrected, angles,n_iterations = 100, gamma = 0.001)
 np.save("code/Module1/ct_ossart.npy",ct_ossart)
 ct_sirt = sirt(ct_corrected,angles,n_iterations = 100, gamma = 0.001)
+
+n_iter = [50,100,150]
+gamma = [0.001,0.005,0.01]
+image_ind = 1
+plt.figure(figsize=(15, 12))
+plt.subplots_adjust(wspace=0.3, hspace=0.4)
+for i in n_iter:
+    for j in gamma:
+        plt.subplot(int(f"{len(n_iter)}{len(gamma)}{image_ind}"))
+        ct_ossart_plot = os_sart(ct_corrected, angles,n_iterations = i, gamma = j)
+        plt.imshow(ct_ossart_plot, cmap="gray")
+        plt.title(f"K = {i} $\gamma$ = {j}")
+        plt.axis("equal")
+        image_ind += 1
+
+plt.savefig(f"graphs/ct_ossart_params.png")
+plt.show()
 # Display results
 #FBP vs OS-SART
 plt.figure(figsize=(12, 6))
