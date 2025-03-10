@@ -7,6 +7,18 @@ from skimage.restoration import denoise_wavelet
 
 
 def butterworth_lowpass_filter(shape, D0=30, n=2): 
+    '''
+    This function creates a Butterworth lowpass filter.
+
+    Parameters:
+    - shape (tuple): The shape of the filter.
+    - D0 (float): The cutoff frequency.
+    - n (int): The order of the filter.
+
+    Returns:
+    - H (numpy.ndarray): The Butterworth lowpass filter.
+
+    '''
     P, Q = shape[0], shape[1]
     u = np.arange(P) - P // 2
     v = np.arange(Q) - Q // 2
@@ -16,6 +28,15 @@ def butterworth_lowpass_filter(shape, D0=30, n=2):
     return H
 
 def kspace_to_image(kspace):
+    '''
+    This function converts k-space data to image space.
+
+    Parameters:
+    - kspace (numpy.ndarray): The k-space data.
+
+    Returns:
+    - image (numpy.ndarray): The image space data.
+    '''
     image = np.fft.fftshift(kspace)
     image = np.fft.ifft2(image)
     
