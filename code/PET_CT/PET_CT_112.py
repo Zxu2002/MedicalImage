@@ -126,7 +126,7 @@ if __name__ == "__main__":
     angles = np.linspace(0, 180, 180,endpoint=False)
 
     ct_ossart = os_sart(ct_corrected, angles,n_iterations = 100, gamma = 0.001)
-    np.save("ct_ossart.npy",ct_ossart)
+    np.save("saved_data/ct_ossart.npy",ct_ossart)
     ct_sirt = sirt(ct_corrected,angles,n_iterations = 100, gamma = 0.001)
 
     n_iter = [50,100,150]
