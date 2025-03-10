@@ -147,6 +147,7 @@ if __name__ == "__main__":
     axes[1, 1].axis('off')
 
     plt.tight_layout()
+    plt.savefig("graph/Butterworth_Filtered.png")
     plt.show()
 
     #2.2.3

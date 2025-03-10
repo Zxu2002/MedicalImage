@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools", "Cython", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "medical_image_coursework"
+dynamic = ["version"]
+description = "A Python package for the code solutions to the medical image coursework"
+readme = "README.md"
+requires-python = "==3.9.6"
+authors = [{name = "Zihan Xu", email = "zx282@cam.ac.uk"}]
+keywords = ["medical", "medical images", "MRI", "CT", "PET"]
+dependencies = [
+contourpy==1.3.0
+cycler==0.12.1
+fonttools==4.56.0
+imageio==2.37.0
+importlib_resources==6.5.2
+kiwisolver==1.4.7
+lazy_loader==0.4
+matplotlib==3.9.4
+networkx==3.2.1
+nibabel==5.3.2
+numpy==2.0.2
+opencv-python==4.11.0.86
+packaging==24.2
+pandas==2.2.3
+pathlib==1.0.1
+pillow==11.1.0
+pyparsing==3.2.1
+python-dateutil==2.9.0.post0
+pytz==2025.1
+PyWavelets==1.6.0
+scikit-image==0.24.0
+scipy==1.13.1
+six==1.17.0
+tifffile==2024.8.30
+tqdm==4.67.1
+typing_extensions==4.12.2
+tzdata==2025.1
+zipp==3.21.0
+]
+
+[tool.setuptools_scm]
+write_to = "medical_image_coursework/version.py"
+
+[tool.setuptools]
+package-dir = {"" = "medical_image_coursework"}
+
+[project.scripts]
+medical_image_coursework = "medical_image_coursework.cli:main"
