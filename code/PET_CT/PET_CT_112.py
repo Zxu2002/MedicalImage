@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage.transform import iradon, radon
 from tqdm import tqdm
-
+import os
 
 # OS-SART implementation
 def os_sart(sinogram, angles, n_iterations=100, gamma=0.01,n_subsets=10):
@@ -24,7 +24,8 @@ def os_sart(sinogram, angles, n_iterations=100, gamma=0.01,n_subsets=10):
     subset_size = n_angles // n_subsets
 
     # recon = ct_fbp.copy()
-    recon = np.zeros_like(ct_fbp)
+    img_shape = int(sinogram.shape[0])
+    recon = np.zeros((img_shape, img_shape))
     angle_subsets = []
     sino_subsets = []
 
@@ -67,22 +68,23 @@ def sirt(sinogram,angles,n_iterations = 100, gamma = 0.01):
     Returns:
     - x (numpy.ndarray): The reconstructed CT image.
     '''
-    x = np.zeros(ct_fbp.shape)
+    img_shape = int(sinogram.shape[0])
+    x = np.zeros((img_shape, img_shape))
     for _ in tqdm(range(n_iterations)):
         residual = sinogram-radon(x,angles)
         gradient = gamma*iradon(residual,angles,filter_name=None) 
         x = x + gradient
     return x
 
-if __name__ == "__main__":
+def main(data_path,output_path = "graph"):
     #1.1
-    ct_sino=np.load("data/Module1/ct_sinogram.npy")
-    pet_sino=np.load("data/Module1/pet_sinogram.npy")
+    ct_sino=np.load(data_path + "/ct_sinogram.npy")
+    pet_sino=np.load(data_path + "/pet_sinogram.npy")
 
     #Additional data provided for correction 
-    ct_dark = np.load("data/Module1/ct_dark.npy")
-    ct_flat = np.load("data/Module1/ct_flat.npy")
-    pet_calibration = np.load("data/Module1/pet_calibration.npy")
+    ct_dark = np.load(data_path + "/ct_dark.npy")
+    ct_flat = np.load(data_path + "/ct_flat.npy")
+    pet_calibration = np.load(data_path + "/pet_calibration.npy")
 
     #visualize the sinograms
     plt.figure()
@@ -94,7 +96,7 @@ if __name__ == "__main__":
     plt.imshow(ct_sino, cmap="gray")
     plt.title("Origional CT scan")
     plt.axis("equal")
-    plt.savefig("graphs/ct_pet.png")
+    plt.savefig(output_path + "/ct_pet.png")
     plt.show()
 
     #Compute the corrected sinograms
@@ -111,7 +113,7 @@ if __name__ == "__main__":
     plt.imshow(ct_corrected, cmap="gray")
     plt.title("Corrected CT scan")
     plt.axis("equal")
-    plt.savefig("graphs/ct_pet_corrected.png")
+    plt.savefig(output_path + "/ct_pet_corrected.png")
     plt.show()
 
     #1.2
@@ -126,6 +128,7 @@ if __name__ == "__main__":
     angles = np.linspace(0, 180, 180,endpoint=False)
 
     ct_ossart = os_sart(ct_corrected, angles,n_iterations = 100, gamma = 0.001)
+    os.makedirs("saved_data", exist_ok=True)
     np.save("saved_data/ct_ossart.npy",ct_ossart)
     ct_sirt = sirt(ct_corrected,angles,n_iterations = 100, gamma = 0.001)
 
@@ -143,7 +146,7 @@ if __name__ == "__main__":
             plt.axis("equal")
             image_ind += 1
 
-    plt.savefig(f"graphs/ct_ossart_params.png")
+    plt.savefig(output_path + "/ct_ossart_params.png")
     plt.show()
     # Display results
     #FBP vs OS-SART
@@ -159,7 +162,7 @@ if __name__ == "__main__":
     plt.axis("equal")
 
     plt.tight_layout()
-    plt.savefig("graphs/ct_recon_sart_fbp.png")
+    plt.savefig(output_path + "/ct_recon_sart_fbp.png")
     plt.show()
 
 
@@ -176,6 +179,6 @@ if __name__ == "__main__":
     plt.axis("equal")
 
     plt.tight_layout()
-    plt.savefig("graphs/ct_recon_sart_sirt.png")
+    plt.savefig(output_path + "/ct_recon_sart_sirt.png")
     plt.show()
 

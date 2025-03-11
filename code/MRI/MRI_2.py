@@ -44,9 +44,9 @@ def kspace_to_image(kspace):
 
 
 
-def main_MRI2(data_path,output_path):
+def main(data_path,output_path = "graph"):
     # Load k-space data
-    kspace = np.load(data_path + "kspace.npy")
+    kspace = np.load(data_path + "/kspace.npy")
     print(kspace.shape)
 
     # convert k-space data to image 
@@ -147,7 +147,7 @@ def main_MRI2(data_path,output_path):
     axes[1, 1].axis('off')
 
     plt.tight_layout()
-    plt.savefig(output_path + "Butterworth_Filtered.png")
+    plt.savefig(output_path + "/Butterworth_Filtered.png")
     plt.show()
 
     #2.2.3
@@ -170,5 +170,5 @@ def main_MRI2(data_path,output_path):
     axes[1].axis("off")
     
     plt.tight_layout()
-    plt.savefig(output_path + "Butterworth_Filtered_Combined")
+    plt.savefig(output_path + "/Butterworth_Filtered_Combined")
     plt.show()

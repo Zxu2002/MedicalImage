@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>PET_CT module &#8212; Medical Imaging  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MRI module" href="MRI.html" />
+    <link rel="prev" title="medical_image_code documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-PET_CT_112">
+<span id="pet-ct-module"></span><h1>PET_CT module<a class="headerlink" href="#module-PET_CT_112" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="PET_CT_112.main">
+<span class="sig-prename descclassname"><span class="pre">PET_CT_112.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'graph'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PET_CT_112.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PET_CT_112.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PET_CT_112.os_sart">
+<span class="sig-prename descclassname"><span class="pre">PET_CT_112.</span></span><span class="sig-name descname"><span class="pre">os_sart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sinogram</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_subsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PET_CT_112.html#os_sart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PET_CT_112.os_sart" title="Link to this definition">¶</a></dt>
+<dd><p>This function performs the OS-SART algorithm for reconstruction of CT images from sinograms.</p>
+<p>Parameters:
+- sinogram (numpy.ndarray): The sinogram data.
+- angles (numpy.ndarray): The angles used for the sinogram acquisition.
+- n_iterations (int): The number of iterations to perform.
+- gamma (float): The relaxation parameter.
+- n_subsets (int): The number of subsets to use.</p>
+<p>Returns:
+- recon (numpy.ndarray): The reconstructed CT image.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PET_CT_112.sirt">
+<span class="sig-prename descclassname"><span class="pre">PET_CT_112.</span></span><span class="sig-name descname"><span class="pre">sirt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sinogram</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PET_CT_112.html#sirt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PET_CT_112.sirt" title="Link to this definition">¶</a></dt>
+<dd><p>This function performs the SIRT algorithm for reconstruction of CT images from sinograms.</p>
+<p>Parameters:
+- sinogram (numpy.ndarray): The sinogram data.
+- angles (numpy.ndarray): The angles used for the sinogram acquisition.
+- n_iterations (int): The number of iterations to perform.
+- gamma (float): The relaxation parameter.</p>
+<p>Returns:
+- x (numpy.ndarray): The reconstructed CT image.</p>
+</dd></dl>
+
+<dl class="py function" id="module-PET_CT_1345">
+<dt class="sig sig-object py" id="PET_CT_1345.MLEM">
+<span class="sig-prename descclassname"><span class="pre">PET_CT_1345.</span></span><span class="sig-name descname"><span class="pre">MLEM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corrected_pet_sino</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iterations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PET_CT_1345.html#MLEM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PET_CT_1345.MLEM" title="Link to this definition">¶</a></dt>
+<dd><p>This function performs the MLEM algorithm for reconstruction of PET images from sinograms.</p>
+<p>Parameters:
+- corrected_pet_sino (numpy.ndarray): The corrected PET sinogram.
+- angles (numpy.ndarray): The angles used for the sinogram acquisition.
+- num_iterations (int): The number of iterations to perform.</p>
+<p>Returns:
+- mlem_reconstruction (numpy.ndarray): The reconstructed PET image.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PET_CT_1345.OSEM">
+<span class="sig-prename descclassname"><span class="pre">PET_CT_1345.</span></span><span class="sig-name descname"><span class="pre">OSEM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corrected_pet_sino</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iterations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_subsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset_angles</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PET_CT_1345.html#OSEM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PET_CT_1345.OSEM" title="Link to this definition">¶</a></dt>
+<dd><p>This function performs the OSEM algorithm for reconstruction of PET images from sinograms.</p>
+<p>Parameters:
+- corrected_pet_sino (numpy.ndarray): The corrected PET sinogram.
+- angles (numpy.ndarray): The angles used for the sinogram acquisition.
+- num_iterations (int): The number of iterations to perform.
+- num_subsets (int): The number of subsets to use.
+- subset_indices (list): The indices of the subsets.
+- subset_angles (list): The angles for each subset.</p>
+<p>Returns:
+- osem_reconstruction (numpy.ndarray): The reconstructed PET image.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PET_CT_1345.main">
+<span class="sig-prename descclassname"><span class="pre">PET_CT_1345.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'graph'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PET_CT_1345.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PET_CT_1345.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Medical Imaging</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PET_CT module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#PET_CT_112.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#PET_CT_112.os_sart"><code class="docutils literal notranslate"><span class="pre">os_sart()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#PET_CT_112.sirt"><code class="docutils literal notranslate"><span class="pre">sirt()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#PET_CT_1345.MLEM"><code class="docutils literal notranslate"><span class="pre">MLEM()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#PET_CT_1345.OSEM"><code class="docutils literal notranslate"><span class="pre">OSEM()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#PET_CT_1345.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="MRI.html">MRI module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CT.html">CT module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">medical_image_code documentation</a></li>
+      <li>Next: <a href="MRI.html" title="next chapter">MRI module</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, ZihanXu.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../_sources/modules/PET_CT.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

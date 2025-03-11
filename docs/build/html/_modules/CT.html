@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CT &#8212; Medical Imaging  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for CT</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">nibabel</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<div class="viewcode-block" id="load_patient_data">
+<a class="viewcode-back" href="../modules/CT.html#CT.load_patient_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_patient_data</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Load the scan and mask data for a patient</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    patient_id (str): The patient ID</span>
+<span class="sd">    data_dir (str): The directory containing the data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - scan_array (np.array): The scan data</span>
+<span class="sd">    - mask_array (np.array): The mask data</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">scan_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">patient_id</span><span class="si">}</span><span class="s2">.nii&quot;</span>
+    <span class="n">mask_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">patient_id</span><span class="si">}</span><span class="s2">_mask.nii&quot;</span>
+
+    <span class="n">scan_nii</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">+</span> <span class="n">scan_file</span><span class="p">)</span>
+    <span class="n">mask_nii</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">+</span> <span class="n">mask_file</span><span class="p">)</span>
+
+    <span class="n">scan_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scan_nii</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">())</span>
+    <span class="n">mask_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mask_nii</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">scan_array</span><span class="p">,</span> <span class="n">mask_array</span></div>
+
+
+<div class="viewcode-block" id="create_subvolume">
+<a class="viewcode-back" href="../modules/CT.html#CT.create_subvolume">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_subvolume</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Create a subvolume containing the mask and surrounding tissue&#39;</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - scan (np.array): The scan data</span>
+<span class="sd">    - mask (np.array): The mask data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - subvolume (np.array): The subvolume containing the mask and surrounding tissue</span>
+<span class="sd">    - mask_subvolume (np.array): The mask subvolume</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Get the center of the mask</span>
+    <span class="n">z_indices</span><span class="p">,</span> <span class="n">y_indices</span><span class="p">,</span> <span class="n">x_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x_indices</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x_indices</span><span class="p">)</span>
+    <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y_indices</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y_indices</span><span class="p">)</span>
+    <span class="n">z_min</span><span class="p">,</span> <span class="n">z_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">z_indices</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">z_indices</span><span class="p">)</span>
+
+    <span class="c1"># Extend the range by 30 voxels in x and y directions, 5 in z direction</span>
+    <span class="n">x_min_extended</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_min</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span>
+    <span class="n">x_max_extended</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">+</span> <span class="mi">30</span><span class="p">)</span>
+    <span class="n">y_min_extended</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_min</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span>
+    <span class="n">y_max_extended</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">+</span> <span class="mi">30</span><span class="p">)</span>
+    <span class="n">z_min_extended</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">z_min</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">z_max_extended</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">z_max</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="n">subvolume</span> <span class="o">=</span> <span class="n">scan</span><span class="p">[</span><span class="n">z_min_extended</span><span class="p">:</span><span class="n">z_max_extended</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+                     <span class="n">y_min_extended</span><span class="p">:</span><span class="n">y_max_extended</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+                     <span class="n">x_min_extended</span><span class="p">:</span><span class="n">x_max_extended</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">mask_subvolume</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="n">z_min_extended</span><span class="p">:</span><span class="n">z_max_extended</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+                          <span class="n">y_min_extended</span><span class="p">:</span><span class="n">y_max_extended</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+                          <span class="n">x_min_extended</span><span class="p">:</span><span class="n">x_max_extended</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">subvolume</span><span class="p">,</span> <span class="n">mask_subvolume</span></div>
+
+
+<div class="viewcode-block" id="find_intensity_range">
+<a class="viewcode-back" href="../modules/CT.html#CT.find_intensity_range">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_intensity_range</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Find the intensity range of the scan within the mask</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - scan (np.array): The scan data</span>
+<span class="sd">    - mask (np.array): The mask data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - min_intensity (float): The minimum intensity within the mask</span>
+<span class="sd">    - max_intensity (float): The maximum intensity within the mask</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">intensities</span> <span class="o">=</span> <span class="n">scan</span><span class="p">[</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">min_intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
+    <span class="n">max_intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">min_intensity</span><span class="p">,</span> <span class="n">max_intensity</span></div>
+
+
+<div class="viewcode-block" id="apply_thresholding">
+<a class="viewcode-back" href="../modules/CT.html#CT.apply_thresholding">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_thresholding</span><span class="p">(</span><span class="n">subvolume_scan</span><span class="p">,</span> <span class="n">subvolume_mask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Apply thresholding to the subvolume scan data based on the intensity range of the mask</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - subvolume_scan (np.array): The subvolume scan data</span>
+<span class="sd">    - subvolume_mask (np.array): The subvolume mask data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - threshold_mask (np.array): The thresholded mask</span>
+<span class="sd">    - threshold (tuple): The intensity range used for threshold</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+        <span class="c1"># Find intensity range of voxels inside the segmentation</span>
+    <span class="n">min_intensity</span><span class="p">,</span> <span class="n">max_intensity</span> <span class="o">=</span> <span class="n">find_intensity_range</span><span class="p">(</span><span class="n">subvolume_scan</span><span class="p">,</span> <span class="n">subvolume_mask</span><span class="p">)</span>
+
+        <span class="c1"># Create a thresholded mask based on the intensity range</span>
+    <span class="n">threshold_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">subvolume_scan</span><span class="p">)</span>
+    <span class="n">threshold_mask</span><span class="p">[(</span><span class="n">subvolume_scan</span> <span class="o">&gt;=</span> <span class="n">min_intensity</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">subvolume_scan</span> <span class="o">&lt;=</span> <span class="n">max_intensity</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">threshold</span> <span class="o">=</span> <span class="p">(</span><span class="n">min_intensity</span><span class="p">,</span> <span class="n">max_intensity</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">threshold_mask</span><span class="p">,</span> <span class="n">threshold</span></div>
+
+
+
+<div class="viewcode-block" id="energy">
+<a class="viewcode-back" href="../modules/CT.html#CT.energy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">energy</span><span class="p">(</span><span class="n">voxel_values</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculate the energy of the voxel values</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    - voxel_values (np.array): The voxel values</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    - energy (float): The energy of the voxel values</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">voxel_values</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="mad">
+<a class="viewcode-back" href="../modules/CT.html#CT.mad">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mad</span><span class="p">(</span><span class="n">voxel_values</span><span class="p">):</span>
+<span class="w">  </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">  Calculate the mean absolute deviation of the voxel values</span>
+
+<span class="sd">  Parameters:</span>
+<span class="sd">  - voxel_values (np.array): The voxel values</span>
+
+<span class="sd">  Returns:</span>
+<span class="sd">  - mad_value (float): The mean absolute deviation of the voxel</span>
+<span class="sd">  &#39;&#39;&#39;</span>
+  
+  <span class="n">mean_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">voxel_values</span><span class="p">)</span>
+  <span class="n">mad_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">voxel_values</span> <span class="o">-</span> <span class="n">mean_value</span><span class="p">))</span>
+  <span class="k">return</span> <span class="n">mad_value</span></div>
+
+
+<div class="viewcode-block" id="uniformity">
+<a class="viewcode-back" href="../modules/CT.html#CT.uniformity">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">uniformity</span><span class="p">(</span><span class="n">voxel_values</span><span class="p">,</span><span class="n">num_bins</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculate the uniformity of the voxel values</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - voxel_values (np.array): The voxel values</span>
+<span class="sd">    - num_bins (int): The number of bins to use for the histogram</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - uniformity (float): The uniformity of the voxel values</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">hist</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">voxel_values</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">num_bins</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Normalize histogram</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">hist</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">voxel_values</span><span class="p">)</span>
+
+    <span class="c1"># Calculate uniformity</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="normalize_intensity">
+<a class="viewcode-back" href="../modules/CT.html#CT.normalize_intensity">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_intensity</span><span class="p">(</span><span class="n">voxel_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Normalize the intensity values of the voxel data</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    - voxel_data (np.array): The voxel data</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    - normalized_data (np.array): The normalized voxel data</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">min_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">voxel_data</span><span class="p">)</span>
+    <span class="n">max_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">voxel_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">voxel_data</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span></div>
+
+
+
+
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../modules/CT.html#CT.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span><span class="n">saveing_large</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="n">patient_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.nii&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_mask.nii&#39;</span><span class="p">):</span>
+            <span class="n">patient_id</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">patient_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+
+
+
+    <span class="n">patient_scans</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">segmentation_masks</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">subvolume_scans</span><span class="o">=</span> <span class="p">[]</span>
+    <span class="n">subvolume_masks</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+    <span class="c1"># Get the NIfTI files</span>
+    <span class="k">for</span> <span class="n">patient_id</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">patient_ids</span><span class="p">):</span>
+
+        <span class="c1"># patient data</span>
+        <span class="n">scans</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">load_patient_data</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">saveing_large</span><span class="p">:</span>
+            <span class="n">patient_scans</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scans</span><span class="p">)</span>
+            <span class="n">segmentation_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+
+        <span class="c1"># subvolume data</span>
+        <span class="n">subvolume_scan</span><span class="p">,</span> <span class="n">subvolume_mask</span> <span class="o">=</span> <span class="n">create_subvolume</span><span class="p">(</span><span class="n">scans</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">saveing_large</span><span class="p">:</span>
+            <span class="n">subvolume_scans</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subvolume_scan</span><span class="p">)</span>
+            <span class="n">subvolume_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subvolume_mask</span><span class="p">)</span>
+
+
+    <span class="n">patient_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">patient_ids</span><span class="p">)</span>
+
+    <span class="n">case_0</span> <span class="o">=</span> <span class="n">load_patient_data</span><span class="p">(</span><span class="n">patient_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data_dir</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">case_0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">case_0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>       
+
+    <span class="c1">#Dice score calculation</span>
+    <span class="n">dice_scores</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">patient_id</span> <span class="ow">in</span> <span class="n">patient_ids</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+        <span class="n">scans</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">load_patient_data</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+        <span class="n">subvolume_scan</span><span class="p">,</span> <span class="n">subvolume_mask</span> <span class="o">=</span> <span class="n">create_subvolume</span><span class="p">(</span><span class="n">scans</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="n">threshold_mask</span><span class="p">,</span> <span class="n">thresholds</span> <span class="o">=</span> <span class="n">apply_thresholding</span><span class="p">(</span><span class="n">subvolume_scan</span><span class="p">,</span> <span class="n">subvolume_mask</span><span class="p">)</span>
+        <span class="n">intersection</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">threshold_mask</span> <span class="o">*</span> <span class="n">subvolume_mask</span><span class="p">)</span>
+        <span class="n">dice_score</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">intersection</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">threshold_mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span>
+        <span class="n">dice_scores</span><span class="p">[</span><span class="n">patient_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">dice_score</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dice score: </span><span class="si">{</span><span class="n">dice_score</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+
+    <span class="n">patient_id</span> <span class="o">=</span> <span class="s2">&quot;case_0&quot;</span>
+    <span class="c1">#patient_id = &quot;case_3&quot;</span>
+
+
+    <span class="n">scans</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">load_patient_data</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+    <span class="n">subvolume_scan</span><span class="p">,</span> <span class="n">subvolume_mask</span> <span class="o">=</span> <span class="n">create_subvolume</span><span class="p">(</span><span class="n">scans</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+    <span class="n">threshold_masks</span><span class="p">,</span> <span class="n">thresholds</span> <span class="o">=</span> <span class="n">apply_thresholding</span><span class="p">(</span><span class="n">subvolume_scan</span><span class="p">,</span> <span class="n">subvolume_mask</span><span class="p">)</span>
+    <span class="n">slice_idx</span> <span class="o">=</span> <span class="n">subvolume_scan</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>  <span class="c1"># Middle slice</span>
+    <span class="n">scan_slice</span> <span class="o">=</span> <span class="n">subvolume_scan</span><span class="p">[:,:,</span><span class="n">slice_idx</span><span class="p">]</span>
+    <span class="n">mask_slice</span> <span class="o">=</span> <span class="n">subvolume_mask</span><span class="p">[:,:,</span><span class="n">slice_idx</span><span class="p">]</span>
+    <span class="n">threshold_masks_slice</span> <span class="o">=</span> <span class="n">threshold_masks</span><span class="p">[:,:,</span><span class="n">slice_idx</span><span class="p">]</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+    <span class="c1">#Original scan</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">scan_slice</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Original Scan&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+    <span class="c1"># ground truth mask</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">scan_slice</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">mask_slice</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Ground Truth Mask&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">scan_slice</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">threshold_masks_slice</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Threshold Mask&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">+</span> <span class="s1">&#39;/threshold_mask.png&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">labels_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s1">&#39;labels.csv&#39;</span><span class="p">))</span>
+    <span class="c1">#Label 1: healthy</span>
+
+    <span class="c1">#Label 2: lung tumor</span>
+
+    <span class="c1">#Label 3: metastatic tumor</span>
+
+    <span class="n">intensity_ranges</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">bins_count</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">patient_id</span> <span class="ow">in</span> <span class="n">patient_ids</span><span class="p">:</span>
+        <span class="n">patient_num</span> <span class="o">=</span> <span class="n">patient_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">diagnosis</span> <span class="o">=</span> <span class="n">labels_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">labels_df</span><span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">patient_num</span><span class="p">),</span> <span class="s1">&#39;Diagnosis&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="k">if</span> <span class="n">diagnosis</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">scan</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">load_patient_data</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+            <span class="n">voxel_values</span> <span class="o">=</span> <span class="n">scan</span><span class="p">[</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">intensities</span> <span class="o">=</span> <span class="n">normalize_intensity</span><span class="p">(</span><span class="n">voxel_values</span><span class="p">)</span>
+
+            <span class="n">min_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
+            <span class="n">max_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
+            <span class="n">intensity_ranges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">min_int</span><span class="p">,</span><span class="n">max_int</span><span class="p">))</span>
+
+            <span class="n">bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">max_int</span> <span class="o">-</span> <span class="n">min_int</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">3.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">))))</span>
+            <span class="n">bins_count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+
+    <span class="n">bins_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">bins_count</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">bins_number</span><span class="p">)</span>
+
+    <span class="n">features</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">patient_id</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">patient_ids</span><span class="p">):</span>
+        <span class="n">scans</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">load_patient_data</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+        <span class="n">scan</span> <span class="o">=</span> <span class="n">normalize_intensity</span><span class="p">(</span><span class="n">scan</span><span class="p">)</span>
+
+        <span class="n">intensities</span> <span class="o">=</span> <span class="n">scans</span><span class="p">[</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">energy_val</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
+        <span class="n">mad_val</span> <span class="o">=</span> <span class="n">mad</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
+        <span class="n">uniformity_val</span> <span class="o">=</span> <span class="n">uniformity</span><span class="p">(</span><span class="n">intensities</span><span class="p">,</span> <span class="n">num_bins</span><span class="o">=</span><span class="n">bins_number</span><span class="p">)</span>
+        <span class="n">features</span><span class="p">[</span><span class="n">patient_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">energy_val</span><span class="p">,</span> <span class="n">mad_val</span><span class="p">,</span> <span class="n">uniformity_val</span><span class="p">]</span>
+
+    <span class="c1">#created a dataframe for all the statistics</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Energy&#39;</span><span class="p">,</span><span class="s1">&#39;Mean Absolute Deviation&#39;</span><span class="p">,</span><span class="s1">&#39;Uniformity&#39;</span><span class="p">]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">round</span><span class="p">({</span><span class="s1">&#39;Energy&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Mean Absolute Deviation&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Uniformity&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="s1">&#39;Case_ID&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="c1">#print(df.head())</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Medical Imaging</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/PET_CT.html">PET_CT module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/MRI.html">MRI module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/CT.html">CT module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, ZihanXu.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -19,8 +19,8 @@ def kspace_to_image(kspace):
     
     return image
 
-def main_MRI_1(data_path,output_path):
-    kspace = np.load(data_path + "kspace.npy")
+def main(data_path,output_path = "graph"):
+    kspace = np.load(data_path + "/kspace.npy")
     print(kspace.shape)
 
     #2.1.1
@@ -35,7 +35,7 @@ def main_MRI_1(data_path,output_path):
         plt.title(f'Coil {i+1} k-space magnitude')
         plt.colorbar()
     plt.tight_layout()
-    plt.savefig(output_path + "all_coil_kspace_magnitude.png")
+    plt.savefig(output_path + "/all_coil_kspace_magnitude.png")
     plt.show()
 
     #2.1.3
@@ -56,7 +56,7 @@ def main_MRI_1(data_path,output_path):
     plt.title(f'Coil {coil_idx+1} Phase')
     plt.colorbar()
     plt.tight_layout()
-    plt.savefig(output_path + "coil1_magnitude_phase.png")
+    plt.savefig(output_path + "/coil1_magnitude_phase.png")
     plt.show()
 
     #2.1.4
@@ -67,7 +67,7 @@ def main_MRI_1(data_path,output_path):
         plt.title(f'Coil {i+1} Magnitude')
         plt.colorbar()
     plt.tight_layout()
-    plt.savefig(output_path + "all_coil_magnitude.png")
+    plt.savefig(output_path + "/all_coil_magnitude.png")
     plt.show()
 
     #2.1.5
@@ -81,5 +81,5 @@ def main_MRI_1(data_path,output_path):
     plt.title('Combined Image (Sum of Squares)')
     plt.colorbar()
     plt.tight_layout()
-    plt.savefig(output_path + "combined_image.png")
+    plt.savefig(output_path + "/combined_image.png")
     plt.show()

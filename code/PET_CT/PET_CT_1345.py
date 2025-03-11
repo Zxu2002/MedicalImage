@@ -67,15 +67,15 @@ def OSEM(corrected_pet_sino, angles, num_iterations, num_subsets, subset_indices
     return osem_reconstruction
 
 
-if __name__ == "__main__":
+def main(data_path,output_path = "graph"):
     #loads the data 
-    ct_sino=np.load("data/Module1/ct_sinogram.npy")
-    pet_sino=np.load("data/Module1/pet_sinogram.npy")
+    ct_sino=np.load(data_path + "/ct_sinogram.npy")
+    pet_sino=np.load(data_path + "/pet_sinogram.npy")
 
     #Additional data provided for correction 
-    ct_dark = np.load("data/Module1/ct_dark.npy")
-    ct_flat = np.load("data/Module1/ct_flat.npy")
-    pet_calibration = np.load("data/Module1/pet_calibration.npy")
+    ct_dark = np.load(data_path + "/ct_dark.npy")
+    ct_flat = np.load(data_path + "/ct_flat.npy")
+    pet_calibration = np.load(data_path + "/pet_calibration.npy")
 
     # Perform the corrections
     ct_corrected = -np.log((ct_sino - ct_dark) / (ct_flat - ct_dark))
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     # Visualize the corrected sinograms
     ct_image = iradon(ct_corrected, theta=np.linspace(0, 180, ct_corrected.shape[1]),filter_name = "ramp")
     print(f"CT image shape: {ct_image.shape}")
-    ct_image = np.load("ct_ossart.npy")
+    ct_image = np.load("saved_data/ct_ossart.npy")
     ct_shape = ct_image.shape
 
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     plt.colorbar()
 
     plt.tight_layout()
-    plt.savefig('graphs/attenuation_correction_results.png')
+    plt.savefig(output_path + '/attenuation_correction_results.png')
     plt.show()
 
 
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     plt.colorbar()
 
     plt.tight_layout()
-    plt.savefig('graphs/pet_reconstruction_comparison.png')
+    plt.savefig(output_path + '/pet_reconstruction_comparison.png')
     plt.show()
 
 
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     plt.colorbar()
 
     plt.tight_layout()
-    plt.savefig('graphs/pet_reconstruction_comparison_os_ml.png')
+    plt.savefig(output_path + '/pet_reconstruction_comparison_os_ml.png')
     plt.show()
 
     #Overlay
@@ -213,5 +213,5 @@ if __name__ == "__main__":
     plt.imshow(resized_ct, cmap='gray_r', alpha=0.6)
     plt.title('Overlay')
     plt.colorbar()
-    plt.savefig('graphs/overlay_reconstruction.png')
+    plt.savefig(output_path + '/overlay_reconstruction.png')
     plt.show()
