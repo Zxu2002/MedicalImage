@@ -3,7 +3,7 @@
 This repository contains code, docs, report and graphs for the medical imaging coursework. 
 
 ## Getting Started
-
+Note that all the command below should be run on the root level of the repository. 
 ### Prerequisites
 
 - Python 3.9.6
@@ -53,7 +53,7 @@ The documentation for this project can be found in the `docs` directory. Open th
 
 ### Running the Code
 
-To run different files in the `code` directory, use the following commands:
+To run python files under folders in the `code` directory, use the following commands:
 
 - To run `CT` module:
 
@@ -66,7 +66,7 @@ To run different files in the `code` directory, use the following commands:
     python3 code/run_script.py CT --data_directory data/Module3 --output_graph_directory graphs/
 
     ```
-
+    Note that there is a `.ipynb` file in the CT file. This is becuase on local machine, it is impossible to store all the patient scans and masks in a Numpy array due to limited RAM space. Instead, the python script is converted to a `.ipynb` file and ran on Google colab TPU, where personal Drive is used to store dataset and used to run the code.  
 - To run `MRI` module:
 
     ```sh
