@@ -86,6 +86,10 @@ def main(data_path,output_path = "graph"):
     ct_flat = np.load(data_path + "/ct_flat.npy")
     pet_calibration = np.load(data_path + "/pet_calibration.npy")
 
+    #Compute the corrected sinograms
+    ct_corrected = -np.log((ct_sino - ct_dark) / (ct_flat - ct_dark))
+    pet_corrected = pet_sino / pet_calibration
+
     #visualize the sinograms
     plt.figure()
     plt.subplot(121)
@@ -93,27 +97,23 @@ def main(data_path,output_path = "graph"):
     plt.title("Original PET scan")
     plt.axis("equal")
     plt.subplot(122)
-    plt.imshow(ct_sino, cmap="gray")
-    plt.title("Origional CT scan")
+    plt.imshow(pet_corrected, cmap="gray_r")
+    plt.title("Corrected PET scan")
     plt.axis("equal")
-    plt.savefig(output_path + "/ct_pet.png")
+    plt.savefig(output_path + "/pet_corrected.png")
     plt.show()
-
-    #Compute the corrected sinograms
-    ct_corrected = -np.log((ct_sino - ct_dark) / (ct_flat - ct_dark))
-    pet_corrected = pet_sino / pet_calibration
 
     #visualize the corrected sinograms
     plt.figure()
     plt.subplot(121)
-    plt.imshow(pet_corrected,cmap="gray_r")
-    plt.title("Corrected PET scan")
+    plt.imshow(ct_sino,cmap="gray")
+    plt.title("CT scan") 
     plt.axis("equal")   
     plt.subplot(122)
     plt.imshow(ct_corrected, cmap="gray")
     plt.title("Corrected CT scan")
     plt.axis("equal")
-    plt.savefig(output_path + "/ct_pet_corrected.png")
+    plt.savefig(output_path + "/ct_corrected.png")
     plt.show()
 
     #1.2
