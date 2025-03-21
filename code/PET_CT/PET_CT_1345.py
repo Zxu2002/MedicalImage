@@ -161,6 +161,9 @@ def main(data_path,output_path = "graph"):
     osem_reconstruction = OSEM(corrected_pet_sino, angle_pet, num_iterations, num_subsets, subset_indices, subset_indices)
     mlem_reconstruction = MLEM(corrected_pet_sino, angle_pet, num_iterations)
 
+    osem_reconstruction_100 = OSEM(corrected_pet_sino, angle_pet, 100, num_subsets, subset_indices, subset_indices)
+    mlem_reconstruction_100 = MLEM(corrected_pet_sino, angle_pet, 100)
+
     # Display results
 
     #FBP vs OSEM
@@ -194,6 +197,22 @@ def main(data_path,output_path = "graph"):
 
     plt.tight_layout()
     plt.savefig(output_path + '/pet_reconstruction_comparison_os_ml.png')
+    plt.show()
+
+    #OSEM vs MLEM 100 iterations
+    plt.figure(figsize=(12, 6))
+    plt.subplot(121)
+    plt.imshow(osem_reconstruction_100, cmap='gray_r')
+    plt.title('OSEM Reconstruction (100 iterations)')
+    plt.colorbar()
+
+    plt.subplot(122)
+    plt.imshow(mlem_reconstruction_100, cmap='gray_r')
+    plt.title(f'MLEM Reconstruction (100 iterations)')
+    plt.colorbar()
+
+    plt.tight_layout()
+    plt.savefig(output_path + '/pet_reconstruction_comparison_os_ml_100.png')
     plt.show()
 
     #Overlay
