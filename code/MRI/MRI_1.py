@@ -27,7 +27,7 @@ def main(data_path,output_path = "graph"):
     num_coils = kspace.shape[0]  
 
     # 2.1.2
-    plt.figure(figsize=(15, 5))
+    plt.figure(figsize=(10, 5))
     for i in range(num_coils):
         plt.subplot(2, 3, i+1)
         kspace_mag = np.log1p(np.abs(kspace[i]))
@@ -60,7 +60,7 @@ def main(data_path,output_path = "graph"):
     plt.show()
 
     #2.1.4
-    plt.figure(figsize=(15, 5))
+    plt.figure(figsize=(10, 5))
     for i in range(num_coils):
         plt.subplot(2, 3, i+1)
         plt.imshow(np.abs(image_data[i]), cmap='gray')

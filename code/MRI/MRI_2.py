@@ -112,6 +112,7 @@ def main(data_path,output_path = "graph"):
     axes[1, 1].axis('off')
 
     plt.tight_layout()
+    plt.savefig(output_path + "/Filtered_Combined.png")
     plt.show()
 
 
@@ -120,7 +121,7 @@ def main(data_path,output_path = "graph"):
     kspace_coil = kspace[coil_idx]
 
     # Create the filter (match dimensions of k-space data)
-    butter_filter = butterworth_lowpass_filter(kspace_coil.shape, D0=30, n=2)
+    butter_filter = butterworth_lowpass_filter(kspace_coil.shape)
     filtered_kspace = kspace_coil * butter_filter
 
     filtered_image = np.fft.ifft2(np.fft.ifftshift(filtered_kspace))
