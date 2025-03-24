@@ -308,6 +308,9 @@ def main(data_dir, output_dir,saveing_large = False):
     features = {}
     for patient_id in tqdm(patient_ids):
         scans, mask = load_patient_data(patient_id, data_dir)
+        patient_num = patient_id.split('_')[1]
+        diagnosis = labels_df.loc[labels_df['ID'] == int(patient_num), 'Diagnosis'].values
+
         scan = normalize_intensity(scan)
 
         intensities = scans[mask > 0]
@@ -315,12 +318,13 @@ def main(data_dir, output_dir,saveing_large = False):
         energy_val = energy(intensities)
         mad_val = mad(intensities)
         uniformity_val = uniformity(intensities, num_bins=bins_number)
-        features[patient_id] = [energy_val, mad_val, uniformity_val]
+        features[patient_id] = [energy_val, mad_val, uniformity_val,diagnosis]
 
     #created a dataframe for all the statistics
     df = pd.DataFrame.from_dict(features, orient='index')
-    df.columns = ['Energy','Mean Absolute Deviation','Uniformity']
+    df.columns = ['Energy','Mean Absolute Deviation','Uniformity', 'Diagnosis']
     df = df.round({'Energy': 2, 'Mean Absolute Deviation': 2, 'Uniformity': 2})
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'Case_ID'}, inplace=True)
+    df.to_csv(output_dir + '/features.csv', index=False)
     #print(df.head())
