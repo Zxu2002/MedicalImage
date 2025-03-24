@@ -191,7 +191,9 @@ def main(data_dir, output_dir,saveing_large = False):
     subvolume_scans= []
     subvolume_masks = []
 
-
+    x = []
+    y = []
+    z = []
     # Get the NIfTI files
     for patient_id in tqdm(patient_ids):
 
@@ -203,12 +205,25 @@ def main(data_dir, output_dir,saveing_large = False):
 
         # subvolume data
         subvolume_scan, subvolume_mask = create_subvolume(scans, mask)
+        z_indices, y_indices, x_indices = np.where(mask > 0)
+
+        x_min, x_max = np.min(x_indices), np.max(x_indices)
+        y_min, y_max = np.min(y_indices), np.max(y_indices)
+        z_min, z_max = np.min(z_indices), np.max(z_indices)
+        x.append(x_min)
+        x.append(x_max)
+        y.append(y_min)
+        y.append(y_max)
+        z.append(z_min)
+        z.append(z_max)
 
         if saveing_large:
             subvolume_scans.append(subvolume_scan)
             subvolume_masks.append(subvolume_mask)
 
-
+    print((min(x),max(x)))
+    print((min(y),max(y)))
+    print((min(z),max(z)))
     patient_ids = sorted(patient_ids)
 
     case_0 = load_patient_data(patient_ids[0], data_dir)
@@ -241,7 +256,7 @@ def main(data_dir, output_dir,saveing_large = False):
     mask_slice = subvolume_mask[:,:,slice_idx]
     threshold_masks_slice = threshold_masks[:,:,slice_idx]
 
-    fig, axes = plt.subplots(1, 3, figsize=(15, 12))
+    fig, axes = plt.subplots(1, 3, figsize=(15, 3))
     #Original scan
     axes[0].imshow(scan_slice, cmap='gray')
     axes[0].set_title('Original Scan')
